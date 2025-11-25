@@ -30,18 +30,44 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
-        userdata = new UserData("광섭", 100000, 50000);
+        LoadUserData();
 
         username.text = userdata.userName;
-        cash.text = userdata.cash.ToString();
-        balance.text = userdata.balance.ToString();
+        cash.text = string.Format("{0:N0} 원", userdata.cash);
+        balance.text = string.Format("{0:N0} 원", userdata.balance);
     }
 
     public void UpdateUI()
     {
         username.text = userdata.userName;
-        cash.text = userdata.cash.ToString();
-        balance.text = userdata.balance.ToString();
+        cash.text = string.Format("{0:N0} 원", userdata.cash);
+        balance.text = string.Format("{0:N0} 원", userdata.balance);
+    }
+
+    public void SaveUserData()
+    {
+        PlayerPrefs.SetString("UserName", userdata.userName);
+        PlayerPrefs.SetInt("Cash", userdata.cash);
+        PlayerPrefs.SetInt("Balance", userdata.balance);
+
+        PlayerPrefs.Save();
+    }
+
+    public void LoadUserData()
+    {
+        if (PlayerPrefs.HasKey("UserName"))
+        {
+            string name = PlayerPrefs.GetString("UserName");
+            int cash = PlayerPrefs.GetInt("Cash");
+            int balance = PlayerPrefs.GetInt("Balance");
+
+            userdata = new UserData(name, cash, balance);
+        }
+
+        else
+        {
+            userdata = new UserData("광섭", 100000, 50000);
+        }
     }
 }
 

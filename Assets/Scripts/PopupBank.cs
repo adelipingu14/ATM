@@ -53,6 +53,7 @@ public class PopupBank : MonoBehaviour
             _userData.cash -= amount;
             _userData.balance += amount;
             GameManager.Instance.UpdateUI();
+            GameManager.Instance.SaveUserData();
         }
     }
 
@@ -63,6 +64,7 @@ public class PopupBank : MonoBehaviour
             _userData.balance -= amount;
             _userData.cash += amount;
             GameManager.Instance.UpdateUI();
+            GameManager.Instance.SaveUserData();
         }
     }
 
@@ -75,7 +77,6 @@ public class PopupBank : MonoBehaviour
 
         if (!isInt)
         {
-            Debug.Log("숫자가 아닙니다.");
             return;
         }
         Deposit(amount);
@@ -83,8 +84,16 @@ public class PopupBank : MonoBehaviour
 
     public void CustomWithDraw()
     {
-        int amount = int.Parse(customWithDraw.text);
-        WithDraw(amount);
+        string input = customWithDraw.text;
+
+        int amount1;
+        bool isInt = int.TryParse(input, out amount1);
+
+        if (!isInt)
+        {
+            return;
+        }
+        WithDraw(amount1);
     }
 
 }
