@@ -15,12 +15,12 @@ public class GameManager : MonoBehaviour
         get
         {
             if (instance == null)
-            { 
+            {
                 instance = FindAnyObjectByType<GameManager>();
 
-                if (instance != null)
-                { 
-                    instance = new GameObject(typeof(GameManager).Name).AddComponent<GameManager>();
+                if (instance == null)
+                {
+                    instance = new GameObject(nameof(GameManager)).AddComponent<GameManager>();
                     DontDestroyOnLoad(instance.gameObject);
                 }
             }
@@ -32,6 +32,13 @@ public class GameManager : MonoBehaviour
     {
         userdata = new UserData("광섭", 100000, 50000);
 
+        username.text = userdata.userName;
+        cash.text = userdata.cash.ToString();
+        balance.text = userdata.balance.ToString();
+    }
+
+    public void UpdateUI()
+    {
         username.text = userdata.userName;
         cash.text = userdata.cash.ToString();
         balance.text = userdata.balance.ToString();
