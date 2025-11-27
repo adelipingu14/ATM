@@ -3,55 +3,53 @@ using UnityEngine.UI;
 
 public class PopupBank : MonoBehaviour
 {
-    private UserData _userData;
 
+    // 팝업 오브젝트 변수
     public GameObject deposit;
     public GameObject withDrawal;
     public GameObject atm;
+    public GameObject login;
+    public GameObject signin;
+
+    // inputField 전용 변수
     public InputField customDeposit;
     public InputField customWithDraw;
 
+    public InputField loginId;
+    public InputField loginPw;
 
-    private GameObject currentPopUp;
+    public InputField signInId;
+    public InputField signInName;
+    public InputField signInPw;
+    public InputField signInPwConfirm;
 
-    
-    
-    
 
     private void Start()
     {
-        _userData = GameManager.Instance.userdata;
-        
+        UIManager.Instance.OpenUI(login);
+
     }
 
 
     public void DepositOpen()
     {
-        atm.SetActive(false);
-        deposit.SetActive(true);
-        currentPopUp = deposit;
+        UIManager.Instance.OpenUI(deposit);
     }
 
     public void WithDrawalOpen()
     {
-        atm.SetActive(false);
-        withDrawal.SetActive(true);
-        currentPopUp = withDrawal;
+        UIManager.Instance.OpenUI(withDrawal);
     }
 
-    public void CloseCurrentPopup()
-    { 
-        currentPopUp.SetActive(false);
-        currentPopUp = null;
-        atm.SetActive(true);
-    }
 
     public void Deposit(int amount)
     {
-        if (_userData.cash >= amount)
+        var data = GameManager.Instance.userdata;
+
+        if (data.cash >= amount)
         {
-            _userData.cash -= amount;
-            _userData.balance += amount;
+            data.cash -= amount;
+            data.balance += amount;
             GameManager.Instance.UpdateUI();
             GameManager.Instance.SaveUserData();
         }
@@ -59,10 +57,12 @@ public class PopupBank : MonoBehaviour
 
     public void WithDraw(int amount)
     {
-        if (_userData.balance >= amount)
+        var data = GameManager.Instance.userdata;
+
+        if (data.balance >= amount)
         {
-            _userData.balance -= amount;
-            _userData.cash += amount;
+            data.balance -= amount;
+            data.cash += amount;
             GameManager.Instance.UpdateUI();
             GameManager.Instance.SaveUserData();
         }
@@ -96,4 +96,81 @@ public class PopupBank : MonoBehaviour
         WithDraw(amount1);
     }
 
+    public void SignIn()
+    {
+        string id = signInId.text;
+        string pw = signInPw.text;
+        string pw2 = signInPwConfirm.text;
+        string name = signInName.text;
+
+
+        if (string.IsNullOrEmpty(id) ||
+            string.IsNullOrEmpty(pw) ||
+            string.IsNullOrEmpty(pw2) ||
+            string.IsNullOrEmpty(name))
+        {
+            Debug.Log("모든 칸을 입력하세요."); // popup
+            return;
+        }
+
+
+        if (pw != pw2)
+        {
+            Debug.Log("비밀번호가 다릅니다."); // popup
+            return;
+        }
+
+        foreach (var user in GameManager.Instance.userDB.userList)
+        {
+            if (user.userId == id)
+            {
+                Debug.Log("이미 존재하는 아이디입니다."); // popup
+                return;
+            }
+        }
+
+        UserData newUser = new UserData(id, pw, name, 100000, 50000);
+        GameManager.Instance.userDB.userList.Add(newUser);
+
+        GameManager.Instance.userdata = newUser;
+
+        GameManager.Instance.SaveUserData();
+        GameManager.Instance.UpdateUI();
+
+        Debug.Log("회원가입 완료!"); // popup
+
+        UIManager.Instance.CloseTopUI();
+
+    }
+
+    public void TryLogin()
+    {
+        string id = loginId.text;
+        string pw = loginPw.text;
+
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(pw))
+        {
+            Debug.Log("아이디/비밀번호를 입력하세요.");
+            return;
+        }
+
+        foreach (var user in GameManager.Instance.userDB.userList)
+        {
+            if (user.userId == id && user.password == pw)
+            {
+                Debug.Log("로그인 성공!");
+
+
+                GameManager.Instance.userdata = user;
+
+                GameManager.Instance.UpdateUI();
+
+                UIManager.Instance.CloseTopUI();
+                UIManager.Instance.OpenUI(atm);
+                return;
+            }
+        }
+
+        Debug.Log("로그인 실패!");
+    }
 }

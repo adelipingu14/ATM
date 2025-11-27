@@ -1,8 +1,10 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
+    public UserDB userDB;
     public UserData userdata;
 
     public Text username;
@@ -31,10 +33,6 @@ public class GameManager : MonoBehaviour
     public void Start()
     {
         LoadUserData();
-
-        username.text = userdata.userName;
-        cash.text = string.Format("{0:N0} 원", userdata.cash);
-        balance.text = string.Format("{0:N0} 원", userdata.balance);
     }
 
     public void UpdateUI()
@@ -46,27 +44,26 @@ public class GameManager : MonoBehaviour
 
     public void SaveUserData()
     {
-        PlayerPrefs.SetString("UserName", userdata.userName);
-        PlayerPrefs.SetInt("Cash", userdata.cash);
-        PlayerPrefs.SetInt("Balance", userdata.balance);
-
-        PlayerPrefs.Save();
+        string json = JsonUtility.ToJson(userDB, true);
+        string path = Application.persistentDataPath + "/userdata.json";
+        File.WriteAllText(path, json);
     }
 
     public void LoadUserData()
     {
-        if (PlayerPrefs.HasKey("UserName"))
+        string path = Application.persistentDataPath + "/userdata.json";
+
+        if (File.Exists(path))
         {
-            string name = PlayerPrefs.GetString("UserName");
-            int cash = PlayerPrefs.GetInt("Cash");
-            int balance = PlayerPrefs.GetInt("Balance");
+            string json = File.ReadAllText(path);
+            userDB = JsonUtility.FromJson<UserDB>(json);
 
-            userdata = new UserData(name, cash, balance);
         }
-
         else
         {
-            userdata = new UserData("광섭", 100000, 50000);
+            userDB = new UserDB();
+            userDB.userList.Add(new UserData("test01", "1234", "광섭", 100000, 50000));
+            SaveUserData(); 
         }
     }
 }
