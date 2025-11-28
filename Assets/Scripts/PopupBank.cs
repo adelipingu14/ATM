@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,6 +11,7 @@ public class PopupBank : MonoBehaviour
     public GameObject atm;
     public GameObject login;
     public GameObject signin;
+    public GameObject transfer;
 
     // inputField 전용 변수
     public InputField customDeposit;
@@ -23,6 +25,8 @@ public class PopupBank : MonoBehaviour
     public InputField signInPw;
     public InputField signInPwConfirm;
 
+    public InputField transferToName;
+    public InputField transferamount;
 
     private void Start()
     {
@@ -53,6 +57,7 @@ public class PopupBank : MonoBehaviour
             GameManager.Instance.UpdateUI();
             GameManager.Instance.SaveUserData();
         }
+        Debug.Log("잔액이 부족합니다.");
     }
 
     public void WithDraw(int amount)
@@ -66,6 +71,7 @@ public class PopupBank : MonoBehaviour
             GameManager.Instance.UpdateUI();
             GameManager.Instance.SaveUserData();
         }
+        Debug.Log("잔액이 부족합니다.");
     }
 
     public void CustomDeposit()
@@ -109,7 +115,7 @@ public class PopupBank : MonoBehaviour
             string.IsNullOrEmpty(pw2) ||
             string.IsNullOrEmpty(name))
         {
-            Debug.Log("모든 칸을 입력하세요."); // popup
+            Debug.Log("잘못된 입력입니다."); // popup
             return;
         }
 
@@ -150,7 +156,7 @@ public class PopupBank : MonoBehaviour
 
         if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(pw))
         {
-            Debug.Log("아이디/비밀번호를 입력하세요.");
+            Debug.Log("잘못된 입력입니다.");  //popup
             return;
         }
 
@@ -164,13 +170,83 @@ public class PopupBank : MonoBehaviour
                 GameManager.Instance.userdata = user;
 
                 GameManager.Instance.UpdateUI();
+                loginId.text = null;
+                loginPw.text = null;
 
                 UIManager.Instance.CloseTopUI();
                 UIManager.Instance.OpenUI(atm);
+
+
+
                 return;
             }
         }
 
-        Debug.Log("로그인 실패!");
+        Debug.Log("로그인 실패!"); //popup
+    }
+
+    public void Transfer()
+    {
+        string towho = transferToName.text;
+        string sendAmountText = transferamount.text;
+
+        UserData data = GameManager.Instance.userdata;
+
+        int sendAmount;
+
+        if (string.IsNullOrEmpty(towho) || string.IsNullOrEmpty(sendAmountText))
+        {
+            Debug.Log("잘못된 입력입니다.");
+            return;
+        }
+
+
+        if (!int.TryParse(sendAmountText, out sendAmount))
+            {
+            Debug.Log("잘못된 입력입니다");
+            return;
+            }
+
+
+
+        foreach (UserData user in GameManager.Instance.userDB.userList)
+        {
+            if (user.userName == towho)
+            {
+                Debug.Log("있어요! 399!");
+
+                if (data.balance < sendAmount)
+                {
+                    Debug.Log("잔액이 부족합니다."); // popup
+                    return;
+                }
+
+                if (data == user)
+                {
+                    Debug.Log("잘못된 입력입니다"); // popup
+                    return;
+                }
+
+                data.balance -= sendAmount;
+
+                user.balance += sendAmount;
+
+                GameManager.Instance.SaveUserData();
+                GameManager.Instance.UpdateUI();
+                transferToName.text = "";
+                transferamount.text = "";
+
+                Debug.Log("송금 완료!"); // popup
+
+                return;
+            }
+        }
+    }
+
+    public void LogOut()
+    {
+        GameManager.Instance.userdata = null;
+        UIManager.Instance.CloseTopUI();
+        UIManager.Instance.OpenUI(login);
     }
 }

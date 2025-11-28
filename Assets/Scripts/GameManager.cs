@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using Newtonsoft.Json;
 
 public class GameManager : MonoBehaviour
 {
@@ -44,7 +45,8 @@ public class GameManager : MonoBehaviour
 
     public void SaveUserData()
     {
-        string json = JsonUtility.ToJson(userDB, true);
+        //string json = JsonUtility.ToJson(userDB, true); //유니티
+        string json = JsonConvert.SerializeObject(userDB, Formatting.Indented); // newton 기능 
         string path = Application.persistentDataPath + "/userdata.json";
         File.WriteAllText(path, json);
     }
@@ -56,8 +58,8 @@ public class GameManager : MonoBehaviour
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            userDB = JsonUtility.FromJson<UserDB>(json);
-
+            //userDB = JsonUtility.FromJson<UserDB>(json);
+            userDB = JsonConvert.DeserializeObject<UserDB>(json);
         }
         else
         {
